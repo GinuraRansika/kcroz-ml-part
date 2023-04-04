@@ -1,4 +1,4 @@
 fastapi
-nvircorn[standard]
+uvircorn[standard]
 torch
 transformers
