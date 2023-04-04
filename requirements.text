@@ -1,0 +1,4 @@
+fastapi
+nvircorn[standard]
+torch
+transformers
