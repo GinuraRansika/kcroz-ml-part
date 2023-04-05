@@ -2,3 +2,5 @@ fastapi
 uvicorn[standard]
 torch
 transformers
+newsapi
+newspaper3k

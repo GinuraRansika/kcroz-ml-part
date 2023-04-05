@@ -4,6 +4,8 @@ import uvicorn
 # import numpy as np
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, pipeline
 import torch
+from newsapi import NewsApiClient
+import newspaper
 
 
 app = FastAPI()
@@ -27,13 +29,30 @@ async def read_root(request: Request):
     data = await request.json()
     print(data)
     if 'text'in data:
-        user_input = data['text']
-        output= pipe(user_input, **gen_kwargs)[0]['summary_text']
-        response = {"recieved text": user_input, "summary text": output}
+        user_interest = data['text']
+        newspaper_url = get_article_url(user_interest)
+        article_content = get_newspaper_content(newspaper_url)
+        output= pipe(article_content, **gen_kwargs)[0]['summary_text']
+        response = output
     else:
-        response = {"Nothing"}
+        response = {"Sorry!, Something went wrong"}
     return response
 
+def get_article_url(user_interest):
+    newsapi = NewsApiClient(api_key='ad2c008f0e354dd38de6c27d44d057eb')
+    sources = newsapi.get_sources()
+    top_headlines = newsapi.get_everything(q='${user_interest}',language='en', sort_by='relevancy')
+    articles = top_headlines['articles']
+    articles_dict = articles[0]
+    url = (articles_dict['url'])
+    return url
+
+def get_newspaper_content(url):
+    article_object = newspaper.Article(url)
+    article_object.download()
+    article_object.parse()
+    article_content = article_object.text
+    return article_content
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host='0.0.0.0', port=8080, reload=True)
