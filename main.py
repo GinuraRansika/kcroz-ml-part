@@ -17,7 +17,6 @@ def get_model():
     model = "Ginura/kcroz-summerization-model"
     tokenizer = AutoTokenizer.from_pretrained(model)
     kcrozModel= AutoModelForSeq2SeqLM.from_pretrained(model).to(device)
-
     pipe = pipeline("summarization", model=model)
     return tokenizer,kcrozModel, pipe
 
@@ -27,7 +26,6 @@ tokenizer, model, pipe = get_model()
 @app.post("/summerize")
 async def read_root(request: Request):
     data = await request.json()
-    print(data)
     if 'text'in data:
         user_interest = data['text']
         newspaper_url = get_article_url(user_interest)
@@ -35,13 +33,13 @@ async def read_root(request: Request):
         output= pipe(article_content, **gen_kwargs)[0]['summary_text']
         response = output
     else:
-        response = {"Sorry!, Something went wrong"}
+        response = {"Sorry!, Somehing went wrong"}
     return response
 
 def get_article_url(user_interest):
     newsapi = NewsApiClient(api_key='ad2c008f0e354dd38de6c27d44d057eb')
     sources = newsapi.get_sources()
-    top_headlines = newsapi.get_everything(q='${user_interest}',language='en', sort_by='relevancy')
+    top_headlines = newsapi.get_everything(q=user_interest,language='en')
     articles = top_headlines['articles']
     articles_dict = articles[0]
     url = (articles_dict['url'])
